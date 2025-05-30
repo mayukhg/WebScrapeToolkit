@@ -172,16 +172,16 @@ def scrape_single():
             
             # Prepare response
             response_data = {
-                'url': scraping_result.url,
-                'success': scraping_result.success,
-                'status_code': scraping_result.status_code,
-                'title': scraping_result.title,
-                'content': scraping_result.content[:1000] if scraping_result.content else None,
-                'content_length': len(scraping_result.content) if scraping_result.content else 0,
-                'links_count': len(scraping_result.links) if scraping_result.links else 0,
-                'images_count': len(scraping_result.images) if scraping_result.images else 0,
+                'url': getattr(scraping_result, 'url', ''),
+                'success': getattr(scraping_result, 'success', False),
+                'status_code': getattr(scraping_result, 'status_code', 0),
+                'title': getattr(scraping_result, 'title', ''),
+                'content': getattr(scraping_result, 'content', '')[:1000] if getattr(scraping_result, 'content', '') else None,
+                'content_length': len(getattr(scraping_result, 'content', '')),
+                'links_count': len(getattr(scraping_result, 'links', [])),
+                'images_count': len(getattr(scraping_result, 'images', [])),
                 'ai_analysis': ai_analysis,
-                'error': scraping_result.error
+                'error': getattr(scraping_result, 'error', None)
             }
             
             return jsonify(response_data)

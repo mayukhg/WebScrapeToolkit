@@ -77,6 +77,17 @@ class AIEnhancedScraper(WebScraper):
                 self.ai_available = True
                 self.logger.info("Anthropic client initialized successfully")
                 
+            elif self.ai_provider == "gemini" or self.ai_provider == "google":
+                import google.generativeai as genai
+                api_key = os.environ.get("GOOGLE_API_KEY")
+                if not api_key:
+                    self.logger.warning("GOOGLE_API_KEY not found. AI features will be disabled.")
+                    return
+                genai.configure(api_key=api_key)
+                self.ai_client = genai.GenerativeModel('gemini-pro')
+                self.ai_available = True
+                self.logger.info("Google Gemini client initialized successfully")
+                
             else:
                 self.logger.error(f"Unsupported AI provider: {self.ai_provider}")
                 
@@ -136,6 +147,11 @@ class AIEnhancedScraper(WebScraper):
                 if response.content and len(response.content) > 0:
                     return response.content[0].text
                 return ""
+                
+            elif self.ai_provider == "gemini" or self.ai_provider == "google":
+                prompt = f"Please summarize the following content in maximum {max_length} words, focusing on the main points and key information:\n\n{text}"
+                response = self.ai_client.generate_content(prompt)
+                return response.text.strip() if response.text else ""
                 
         except Exception as e:
             self.logger.error(f"Error generating summary: {e}")

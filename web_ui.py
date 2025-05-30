@@ -173,10 +173,14 @@ def scrape_single():
                 error_msg = getattr(scraping_result, 'error', 'Unknown error occurred') if scraping_result else 'Failed to scrape URL'
                 return jsonify({'error': error_msg}), 400
             
-            # Save to database
-            db_service = DatabaseService()
-            db_service.get_session(session_id)
-            page = db_service.save_scraped_page(session_id, scraping_result.__dict__, ai_analysis)
+            # Save to database (optional - continue even if this fails)
+            try:
+                db_service = DatabaseService()
+                db_service.get_session(session_id)
+                page = db_service.save_scraped_page(session_id, scraping_result.__dict__, ai_analysis)
+            except Exception as db_error:
+                print(f"Database save failed: {db_error}")
+                # Continue without saving to database
             
             # Prepare response
             response_data = {
@@ -253,8 +257,12 @@ def scrape_multiple():
                         scraping_result = scraper.scrape_page(url)
                         ai_analysis = None
                     
-                    # Save to database
-                    db_service.save_scraped_page(session_id, scraping_result.__dict__, ai_analysis)
+                    # Save to database (optional - continue even if this fails)
+                    try:
+                        db_service.save_scraped_page(session_id, scraping_result.__dict__, ai_analysis)
+                    except Exception as db_error:
+                        print(f"Database save failed: {db_error}")
+                        # Continue without saving to database
                     
                     # Prepare result
                     result_data = {

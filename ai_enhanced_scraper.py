@@ -64,6 +64,7 @@ class AIEnhancedScraper(WebScraper):
                     self.logger.warning("OPENAI_API_KEY not found. AI features will be disabled.")
                     return
                 self.ai_client = OpenAI(api_key=api_key)
+                self.ai_available = True
                 self.logger.info("OpenAI client initialized successfully")
                 
             elif self.ai_provider == "anthropic":
@@ -73,6 +74,7 @@ class AIEnhancedScraper(WebScraper):
                     self.logger.warning("ANTHROPIC_API_KEY not found. AI features will be disabled.")
                     return
                 self.ai_client = Anthropic(api_key=api_key)
+                self.ai_available = True
                 self.logger.info("Anthropic client initialized successfully")
                 
             else:

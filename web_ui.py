@@ -39,7 +39,7 @@ with app.app_context():
 def get_chatbot(session_id):
     """Get or create chatbot instance for session"""
     if session_id not in chatbot_instances:
-        chatbot_instances[session_id] = WebScrapingChatbot()
+        chatbot_instances[session_id] = WebScrapingChatbot(ai_provider="openai")
     return chatbot_instances[session_id]
 
 

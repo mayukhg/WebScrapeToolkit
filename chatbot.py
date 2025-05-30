@@ -8,12 +8,13 @@ allowing users to scrape websites, analyze content, and get insights through nat
 import os
 import json
 import re
+import uuid
+import time
 from typing import Dict, List, Optional, Any
 from web_scraper import WebScraper, ScrapingResult
 from ai_integration_guide import SimpleAIEnhancedScraper
 from utils import is_valid_url, extract_domain, clean_text
 from database_service import DatabaseService
-import time
 
 
 class WebScrapingChatbot:
@@ -27,9 +28,10 @@ class WebScrapingChatbot:
     - Automatic data analysis and insights
     """
     
-    def __init__(self):
+    def __init__(self, ai_provider: str = "openai"):
         """Initialize the chatbot with AI capabilities"""
-        self.scraper = SimpleAIEnhancedScraper(delay=1.5)
+        self.ai_provider = ai_provider.lower()
+        self.scraper = SimpleAIEnhancedScraper(delay=1.5, ai_provider=self.ai_provider)
         self.conversation_history = []
         self.scraped_data = {}  # Store scraped results for reference
         self.session_stats = {
@@ -38,9 +40,15 @@ class WebScrapingChatbot:
             'total_content_analyzed': 0,
             'session_start': time.time()
         }
+        self.session_id = str(uuid.uuid4())
         
-        # Check AI availability
-        self.ai_available = self.scraper.openai_available or self.scraper.anthropic_available
+        # Check AI availability based on selected provider
+        if self.ai_provider == "openai":
+            self.ai_available = self.scraper.openai_available
+        elif self.ai_provider == "anthropic":
+            self.ai_available = self.scraper.anthropic_available
+        else:
+            self.ai_available = False
         
         # Initialize AI client for chatbot responses
         self.ai_client = None

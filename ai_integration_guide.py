@@ -61,22 +61,37 @@ class SimpleAIEnhancedScraper:
         # Perform regular scraping
         result = self.scraper.scrape_page(url)
         
+        # Handle case where scraping failed completely
+        if result is None:
+            return {
+                "url": url,
+                "scraping_successful": False,
+                "title": None,
+                "content_length": 0,
+                "links_count": 0,
+                "ai_summary": None,
+                "ai_analysis": None,
+                "requires_api_key": True,
+                "error": "Failed to scrape the page"
+            }
+        
         analysis = {
             "url": url,
-            "scraping_successful": not bool(result.error),
-            "title": result.title,
-            "content_length": len(result.text_content) if result.text_content else 0,
-            "links_count": len(result.links) if result.links else 0,
+            "scraping_successful": not bool(result.error if hasattr(result, 'error') else False),
+            "title": getattr(result, 'title', None),
+            "content_length": len(result.text_content) if hasattr(result, 'text_content') and result.text_content else 0,
+            "links_count": len(result.links) if hasattr(result, 'links') and result.links else 0,
             "ai_summary": None,
             "ai_analysis": None,
             "requires_api_key": True
         }
         
         # Add AI analysis if content available and AI is configured
-        if result.text_content and (self.openai_available or self.anthropic_available):
+        text_content = getattr(result, 'text_content', None)
+        if text_content and (self.openai_available or self.anthropic_available):
             try:
-                analysis["ai_summary"] = self._generate_summary(result.text_content)
-                analysis["ai_analysis"] = self._analyze_content(result.text_content)
+                analysis["ai_summary"] = self._generate_summary(text_content)
+                analysis["ai_analysis"] = self._analyze_content(text_content)
                 analysis["requires_api_key"] = False
             except Exception as e:
                 analysis["ai_summary"] = f"AI analysis failed: {str(e)}"

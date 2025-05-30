@@ -217,8 +217,8 @@ class WebScrapingChatbot:
                 domain = extract_domain(url)
                 self.scraped_data[domain] = result
                 
-                # Save to database if result exists
-                if result:
+                # Save to database if result exists and is valid
+                if result and isinstance(result, dict):
                     try:
                         ai_result = result.get('ai_analysis', {})
                         DatabaseService.save_scraped_page(
@@ -231,12 +231,12 @@ class WebScrapingChatbot:
                 
                 # Update session statistics
                 self.session_stats['pages_scraped'] += 1
-                if result and result.get('links_count'):
+                if result and isinstance(result, dict) and result.get('links_count'):
                     self.session_stats['total_links_found'] += result['links_count']
-                if result and result.get('content_length'):
+                if result and isinstance(result, dict) and result.get('content_length'):
                     self.session_stats['total_content_analyzed'] += result['content_length']
                 
-                if result and result.get('scraping_successful'):
+                if result and isinstance(result, dict) and result.get('scraping_successful'):
                     response_parts = [
                         f"✅ Successfully scraped {url}",
                         f"📄 Title: {result.get('title', 'No title')}"

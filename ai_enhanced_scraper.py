@@ -84,7 +84,7 @@ class AIEnhancedScraper(WebScraper):
                     self.logger.warning("GOOGLE_API_KEY not found. AI features will be disabled.")
                     return
                 genai.configure(api_key=api_key)
-                self.ai_client = genai.GenerativeModel('gemini-pro')
+                self.ai_client = genai.GenerativeModel('gemini-1.5-flash')
                 self.ai_available = True
                 self.logger.info("Google Gemini client initialized successfully")
                 

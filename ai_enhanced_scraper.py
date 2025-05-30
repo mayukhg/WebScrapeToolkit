@@ -445,8 +445,12 @@ class AIEnhancedScraper(WebScraper):
             ai_result.summary = self.summarize_content(scraping_result.text_content)
             
             sentiment_data = self.analyze_sentiment(scraping_result.text_content)
-            ai_result.sentiment_score = sentiment_data.get("score", 0.0)
-            ai_result.sentiment_confidence = sentiment_data.get("confidence", 0.0)
+            if sentiment_data and isinstance(sentiment_data, dict):
+                ai_result.sentiment_score = sentiment_data.get("score", 0.0)
+                ai_result.sentiment_confidence = sentiment_data.get("confidence", 0.0)
+            else:
+                ai_result.sentiment_score = 0.0
+                ai_result.sentiment_confidence = 0.0
             
             ai_result.content_category = self.categorize_content(
                 scraping_result.text_content, 

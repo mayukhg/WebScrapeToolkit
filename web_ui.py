@@ -157,13 +157,18 @@ def scrape_single():
             if ai_provider != 'none':
                 scraping_result, ai_result = scraper.scrape_with_ai_analysis(url)
                 ai_analysis = {
-                    'summary': ai_result.summary,
-                    'sentiment': f"{ai_result.sentiment_score:.2f}" if ai_result.sentiment_score else None,
-                    'category': ai_result.content_category
+                    'summary': getattr(ai_result, 'summary', None) if ai_result else None,
+                    'sentiment': f"{ai_result.sentiment_score:.2f}" if ai_result and ai_result.sentiment_score else None,
+                    'category': getattr(ai_result, 'content_category', None) if ai_result else None
                 }
             else:
                 scraping_result = scraper.scrape_page(url)
                 ai_analysis = None
+                
+            # Handle failed scraping
+            if not scraping_result or not getattr(scraping_result, 'success', False):
+                error_msg = getattr(scraping_result, 'error', 'Unknown error occurred') if scraping_result else 'Failed to scrape URL'
+                return jsonify({'error': error_msg}), 400
             
             # Save to database
             db_service = DatabaseService()

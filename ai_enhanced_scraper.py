@@ -116,7 +116,8 @@ class AIEnhancedScraper(WebScraper):
                     ],
                     max_tokens=max_length * 2  # Rough estimate for token count
                 )
-                return response.choices[0].message.content.strip()
+                content = response.choices[0].message.content
+                return content.strip() if content else ""
                 
             elif self.ai_provider == "anthropic":
                 response = self.ai_client.messages.create(
@@ -129,7 +130,9 @@ class AIEnhancedScraper(WebScraper):
                         }
                     ]
                 )
-                return response.content[0].text.strip()
+                if response.content and len(response.content) > 0:
+                    return response.content[0].text
+                return ""
                 
         except Exception as e:
             self.logger.error(f"Error generating summary: {e}")

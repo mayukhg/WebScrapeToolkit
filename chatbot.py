@@ -197,6 +197,10 @@ class WebScrapingChatbot:
                 continue
             
             try:
+                # Add https:// if missing
+                if not url.startswith(('http://', 'https://')):
+                    url = 'https://' + url
+                
                 # Perform scraping with AI analysis
                 result = self.scraper.scrape_with_summary(url)
                 
@@ -206,12 +210,12 @@ class WebScrapingChatbot:
                 
                 # Update session statistics
                 self.session_stats['pages_scraped'] += 1
-                if result.get('links_count'):
+                if result and result.get('links_count'):
                     self.session_stats['total_links_found'] += result['links_count']
-                if result.get('content_length'):
+                if result and result.get('content_length'):
                     self.session_stats['total_content_analyzed'] += result['content_length']
                 
-                if result['scraping_successful']:
+                if result and result.get('scraping_successful'):
                     response_parts = [
                         f"✅ Successfully scraped {url}",
                         f"📄 Title: {result.get('title', 'No title')}"
@@ -226,8 +230,9 @@ class WebScrapingChatbot:
                     if result.get('ai_summary') and self.ai_available:
                         response_parts.append(f"🤖 AI Summary: {result['ai_summary']}")
                     
-                    if result.get('ai_analysis', {}).get('content_type'):
-                        response_parts.append(f"📂 Content Type: {result['ai_analysis']['content_type']}")
+                    ai_analysis = result.get('ai_analysis')
+                    if ai_analysis and ai_analysis.get('content_type'):
+                        response_parts.append(f"📂 Content Type: {ai_analysis['content_type']}")
                     
                     results.append("\n".join(response_parts))
                 else:

@@ -64,9 +64,13 @@ class SimpleAIEnhancedScraper:
         
         # Add AI analysis if content available and AI is configured
         if result.text_content and (self.openai_available or self.anthropic_available):
-            analysis["ai_summary"] = self._generate_summary(result.text_content)
-            analysis["ai_analysis"] = self._analyze_content(result.text_content)
-            analysis["requires_api_key"] = False
+            try:
+                analysis["ai_summary"] = self._generate_summary(result.text_content)
+                analysis["ai_analysis"] = self._analyze_content(result.text_content)
+                analysis["requires_api_key"] = False
+            except Exception as e:
+                analysis["ai_summary"] = f"AI analysis failed: {str(e)}"
+                analysis["ai_analysis"] = {"content_type": "Unknown", "error": str(e)}
         
         return analysis
     

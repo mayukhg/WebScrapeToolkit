@@ -16,11 +16,21 @@ class SimpleAIEnhancedScraper:
     Simplified AI-enhanced scraper with clear integration patterns
     """
     
-    def __init__(self, delay: float = 1.0):
+    def __init__(self, delay: float = 1.0, ai_provider: str = "openai"):
         """Initialize the enhanced scraper"""
         self.scraper = WebScraper(delay=delay)
+        self.ai_provider = ai_provider.lower()
         self.openai_available = self._check_openai()
         self.anthropic_available = self._check_anthropic()
+        
+        # Initialize the AI client based on provider
+        self.ai_client = None
+        if self.ai_provider == "openai" and self.openai_available:
+            from openai import OpenAI
+            self.ai_client = OpenAI(api_key=os.environ.get('OPENAI_API_KEY'))
+        elif self.ai_provider == "anthropic" and self.anthropic_available:
+            import anthropic
+            self.ai_client = anthropic.Anthropic(api_key=os.environ.get('ANTHROPIC_API_KEY'))
     
     def _check_openai(self) -> bool:
         """Check if OpenAI is available"""
@@ -82,12 +92,12 @@ class SimpleAIEnhancedScraper:
         # Truncate if too long
         content = text[:3000] if len(text) > 3000 else text
         
-        if self.openai_available:
+        if self.ai_provider == "openai" and self.openai_available:
             return self._openai_summarize(content)
-        elif self.anthropic_available:
+        elif self.ai_provider == "anthropic" and self.anthropic_available:
             return self._anthropic_summarize(content)
         else:
-            return "AI service not configured - API key needed"
+            return f"AI service not configured - {self.ai_provider} API key needed"
     
     def _analyze_content(self, text: str) -> Dict[str, Any]:
         """Analyze content characteristics"""

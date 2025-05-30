@@ -49,6 +49,7 @@ class AIEnhancedScraper(WebScraper):
         super().__init__(**kwargs)
         self.ai_provider = ai_provider.lower()
         self.ai_client = None
+        self.ai_available = False
         
         # Initialize AI client based on provider
         self._initialize_ai_client()

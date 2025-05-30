@@ -188,7 +188,7 @@ class WebScrapingChatbot:
         urls = intent.get("urls", [])
         
         if not urls:
-            return "I'd be happy to scrape a website for you! Please provide a URL. For example: 'Scrape https://example.com'"
+            return "I'd be happy to scrape a website for you! Please provide a URL. For example: 'Scrape example.com' or 'Scrape https://example.com'"
         
         results = []
         for url in urls:

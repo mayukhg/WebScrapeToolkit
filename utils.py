@@ -76,6 +76,10 @@ def is_valid_url(url: str) -> bool:
         bool: True if valid, False otherwise
     """
     try:
+        # Add https:// if no scheme is provided
+        if not url.startswith(('http://', 'https://')):
+            url = 'https://' + url
+        
         result = urllib.parse.urlparse(url)
         return all([result.scheme, result.netloc]) and result.scheme in ['http', 'https']
     except Exception:

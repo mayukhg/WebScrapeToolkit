@@ -139,7 +139,10 @@ def scrape_single():
         
         session_id = session.get('session_id')
         if not session_id:
-            return jsonify({'error': 'No session'}), 400
+            # Create a new session if none exists
+            import uuid
+            session_id = str(uuid.uuid4())
+            session['session_id'] = session_id
         
         # Import required modules
         from web_scraper import WebScraper
@@ -212,7 +215,10 @@ def scrape_multiple():
         
         session_id = session.get('session_id')
         if not session_id:
-            return jsonify({'error': 'No session'}), 400
+            # Create a new session if none exists
+            import uuid
+            session_id = str(uuid.uuid4())
+            session['session_id'] = session_id
         
         # Import required modules
         from web_scraper import WebScraper

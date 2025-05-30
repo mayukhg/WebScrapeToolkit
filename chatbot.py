@@ -384,11 +384,11 @@ class WebScrapingChatbot:
 • "Quit" - End the session
 
 **Example Conversations:**
-• "Scrape https://news.bbc.com and analyze the sentiment"
-• "Get the main points from https://wikipedia.org/wiki/Python"
-• "What kind of website is https://github.com?"
+• "Scrape amazon.in and analyze the sentiment"
+• "Get the main points from wikipedia.org"
+• "What kind of website is github.com?"
 
-💡 Pro tip: You can chain commands naturally, like "Scrape this site and tell me what it's about"
+💡 Pro tip: Just type the domain name - no need for http:// or https://
         """
         return help_text.strip()
     

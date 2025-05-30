@@ -65,11 +65,22 @@ def normalize_url(url: str) -> str:
     if url.startswith(('http://', 'https://')):
         return url
     
-    # Remove any leading slashes
-    url = url.lstrip('/')
+    # Remove any leading/trailing whitespace and slashes
+    url = url.strip().lstrip('/')
     
-    # Try HTTPS first for most domains
-    return 'https://' + url
+    # Handle common patterns like "www.example.com" or "example.com"
+    if '.' in url and not url.startswith('www.'):
+        # Simple domain like "amazon.in" or "google.com"
+        return 'https://' + url
+    elif url.startswith('www.'):
+        # Domain with www prefix
+        return 'https://' + url
+    elif url.count('.') >= 1:
+        # Looks like a domain
+        return 'https://' + url
+    else:
+        # Default to https for anything else
+        return 'https://' + url
 
 
 def extract_domain(url: str) -> str:

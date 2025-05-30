@@ -28,7 +28,7 @@ class WebScrapingChatbot:
     - Automatic data analysis and insights
     """
     
-    def __init__(self, ai_provider: str = "openai"):
+    def __init__(self, ai_provider: str = "gemini"):
         """Initialize the chatbot with AI capabilities"""
         self.ai_provider = ai_provider.lower()
         self.scraper = SimpleAIEnhancedScraper(delay=1.5, ai_provider=self.ai_provider)

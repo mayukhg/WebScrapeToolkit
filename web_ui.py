@@ -36,10 +36,10 @@ with app.app_context():
     db.create_all()
 
 
-def get_chatbot(session_id):
+def get_chatbot(session_id, ai_provider="gemini"):
     """Get or create chatbot instance for session"""
     if session_id not in chatbot_instances:
-        chatbot_instances[session_id] = WebScrapingChatbot(ai_provider="openai")
+        chatbot_instances[session_id] = WebScrapingChatbot(ai_provider=ai_provider)
     return chatbot_instances[session_id]
 
 
@@ -58,6 +58,7 @@ def chat():
     try:
         data = request.get_json()
         message = data.get('message', '').strip()
+        ai_provider = data.get('ai_provider', 'gemini')
         
         if not message:
             return jsonify({'error': 'Empty message'}), 400
@@ -66,7 +67,18 @@ def chat():
         if not session_id:
             return jsonify({'error': 'No session'}), 400
         
-        chatbot = get_chatbot(session_id)
+        # Create a new chatbot instance if AI provider changed
+        session_key = f"{session_id}_{ai_provider}"
+        if session_key not in chatbot_instances:
+            # Clean up old instance if it exists
+            old_instances = [k for k in chatbot_instances.keys() if k.startswith(session_id)]
+            for old_key in old_instances:
+                chatbot_instances[old_key].close()
+                del chatbot_instances[old_key]
+            
+            chatbot_instances[session_key] = WebScrapingChatbot(ai_provider=ai_provider)
+        
+        chatbot = chatbot_instances[session_key]
         response = chatbot.process_message(message)
         
         return jsonify({

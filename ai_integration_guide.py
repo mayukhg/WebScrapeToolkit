@@ -35,7 +35,7 @@ class SimpleAIEnhancedScraper:
         elif self.ai_provider == "gemini" and self.gemini_available:
             import google.generativeai as genai
             genai.configure(api_key=os.environ.get('GOOGLE_API_KEY'))
-            self.ai_client = genai.GenerativeModel('gemini-pro')
+            self.ai_client = genai.GenerativeModel('gemini-1.5-flash')
     
     def _check_openai(self) -> bool:
         """Check if OpenAI is available"""
@@ -139,7 +139,7 @@ class SimpleAIEnhancedScraper:
             "ai_insights": None
         }
         
-        if self.openai_available or self.anthropic_available:
+        if self.openai_available or self.anthropic_available or self.gemini_available:
             analysis["ai_insights"] = self._get_ai_insights(text[:2000])
         
         return analysis
@@ -201,6 +201,15 @@ class SimpleAIEnhancedScraper:
         except Exception as e:
             return f"Anthropic summarization error: {str(e)}"
     
+    def _gemini_summarize(self, text: str) -> str:
+        """Generate summary using Google Gemini"""
+        try:
+            prompt = f"Please provide a concise summary of this text content in 2-3 sentences: {text}"
+            response = self.ai_client.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            return f"Gemini summarization error: {str(e)}"
+    
     def _get_ai_insights(self, text: str) -> Dict[str, Any]:
         """Get AI insights about the content"""
         insights = {
@@ -210,10 +219,12 @@ class SimpleAIEnhancedScraper:
         }
         
         try:
-            if self.openai_available:
+            if self.ai_provider == "openai" and self.openai_available:
                 insights = self._openai_insights(text)
-            elif self.anthropic_available:
+            elif self.ai_provider == "anthropic" and self.anthropic_available:
                 insights = self._anthropic_insights(text)
+            elif self.ai_provider == "gemini" and self.gemini_available:
+                insights = self._gemini_insights(text)
         except Exception as e:
             insights["error"] = str(e)
         
@@ -257,6 +268,15 @@ class SimpleAIEnhancedScraper:
         
         try:
             return json.loads(response.content[0].text)
+        except:
+            return {"sentiment": "neutral", "key_topics": [], "language_quality": "unknown"}
+    
+    def _gemini_insights(self, text: str) -> Dict[str, Any]:
+        """Get insights using Google Gemini"""
+        try:
+            prompt = f"Analyze this text and return JSON with sentiment (positive/negative/neutral), key_topics (array), and language_quality (high/medium/low): {text}"
+            response = self.ai_client.generate_content(prompt)
+            return json.loads(response.text)
         except:
             return {"sentiment": "neutral", "key_topics": [], "language_quality": "unknown"}
     

@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Scraper Interface</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f6fa;
+            color: #333;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+        
+        .nav-tabs {
+            display: flex;
+            background: white;
+            border-radius: 10px;
+            margin-bottom: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .nav-tab {
+            flex: 1;
+            padding: 1rem;
+            text-align: center;
+            background: white;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .nav-tab.active {
+            background: #667eea;
+            color: white;
+        }
+        
+        .nav-tab:hover {
+            background: #f8f9fa;
+        }
+        
+        .nav-tab.active:hover {
+            background: #5a6fd8;
+        }
+        
+        .tab-content {
+            display: none;
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e1e8ed;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 1rem;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .btn {
+            background: #667eea;
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+        
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+        }
+        
+        .results-container {
+            margin-top: 2rem;
+        }
+        
+        .result-card {
+            background: white;
+            border-radius: 10px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            border-left: 4px solid #667eea;
+        }
+        
+        .result-header {
+            display: flex;
+            justify-content: between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+        
+        .result-url {
+            font-weight: 600;
+            color: #667eea;
+            text-decoration: none;
+        }
+        
+        .result-url:hover {
+            text-decoration: underline;
+        }
+        
+        .result-status {
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .result-meta {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .result-content {
+            margin-top: 1rem;
+        }
+        
+        .result-content h4 {
+            margin-bottom: 0.5rem;
+            color: #333;
+        }
+        
+        .content-preview {
+            background: #f8f9fa;
+            padding: 1rem;
+            border-radius: 6px;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+        
+        .stat-label {
+            color: #666;
+            margin-top: 0.5rem;
+        }
+        
+        .ai-analysis {
+            background: #f8f9fa;
+            border-left: 4px solid #28a745;
+            padding: 1rem;
+            margin-top: 1rem;
+            border-radius: 0 6px 6px 0;
+        }
+        
+        .ai-analysis h5 {
+            color: #28a745;
+            margin-bottom: 0.5rem;
+        }
+        
+        .history-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        
+        .history-table th,
+        .history-table td {
+            padding: 0.75rem;
+            text-align: left;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .history-table th {
+            background: #f8f9fa;
+            font-weight: 600;
+        }
+        
+        .history-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e9ecef;
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #667eea;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🕷️ Web Scraper</h1>
+        <p>Intelligent web scraping with AI-powered analysis</p>
+        <div style="margin-top: 1rem;">
+            <a href="/" style="background: rgba(255,255,255,0.2); color: white; padding: 0.5rem 1rem; border-radius: 6px; text-decoration: none; font-size: 0.9rem;">🤖 Chat Interface</a>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="switchTab('single')">Single URL</button>
+            <button class="nav-tab" onclick="switchTab('multiple')">Multiple URLs</button>
+            <button class="nav-tab" onclick="switchTab('history')">History</button>
+            <button class="nav-tab" onclick="switchTab('analytics')">Analytics</button>
+        </div>
+
+        <!-- Single URL Tab -->
+        <div id="single" class="tab-content active">
+            <h2>Scrape Single URL</h2>
+            <form id="singleUrlForm">
+                <div class="form-group">
+                    <label for="singleUrl">URL to Scrape</label>
+                    <input type="url" id="singleUrl" placeholder="https://example.com" required>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="aiProvider">AI Provider</label>
+                        <select id="aiProvider">
+                            <option value="gemini">Google Gemini</option>
+                            <option value="openai">OpenAI GPT-4</option>
+                            <option value="none">No AI Analysis</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="extractImages">Extract Images</label>
+                        <select id="extractImages">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label for="customSelector">Custom CSS Selector (Optional)</label>
+                    <input type="text" id="customSelector" placeholder="e.g., .article-content, #main-content">
+                </div>
+                
+                <button type="submit" class="btn" id="singleSubmitBtn">
+                    🚀 Start Scraping
+                </button>
+            </form>
+            
+            <div id="singleResults" class="results-container"></div>
+        </div>
+
+        <!-- Multiple URLs Tab -->
+        <div id="multiple" class="tab-content">
+            <h2>Scrape Multiple URLs</h2>
+            <form id="multipleUrlForm">
+                <div class="form-group">
+                    <label for="multipleUrls">URLs (one per line)</label>
+                    <textarea id="multipleUrls" rows="8" placeholder="https://example1.com&#10;https://example2.com&#10;https://example3.com" required></textarea>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="multiAiProvider">AI Provider</label>
+                        <select id="multiAiProvider">
+                            <option value="gemini">Google Gemini</option>
+                            <option value="openai">OpenAI GPT-4</option>
+                            <option value="none">No AI Analysis</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="delay">Delay Between Requests (seconds)</label>
+                        <input type="number" id="delay" min="0" max="10" step="0.1" value="1" required>
+                    </div>
+                </div>
+                
+                <button type="submit" class="btn" id="multiSubmitBtn">
+                    🚀 Start Batch Scraping
+                </button>
+            </form>
+            
+            <div id="multipleProgress" style="display: none;">
+                <h4>Progress</h4>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p id="progressText">Processing...</p>
+            </div>
+            
+            <div id="multipleResults" class="results-container"></div>
+        </div>
+
+        <!-- History Tab -->
+        <div id="history" class="tab-content">
+            <h2>Scraping History</h2>
+            <div class="form-row">
+                <button class="btn btn-secondary" onclick="loadHistory()">🔄 Refresh</button>
+                <button class="btn btn-danger" onclick="clearHistory()">🗑️ Clear History</button>
+            </div>
+            <div id="historyResults"></div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+            <h2>Analytics Dashboard</h2>
+            <button class="btn btn-secondary" onclick="loadAnalytics()">🔄 Refresh</button>
+            <div id="analyticsResults"></div>
+        </div>
+    </div>
+
+    <script>
+        let currentTab = 'single';
+        
+        function switchTab(tabName) {
+            // Hide all tabs
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Remove active class from all nav tabs
+            document.querySelectorAll('.nav-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // Show selected tab
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+            
+            currentTab = tabName;
+            
+            // Load data for specific tabs
+            if (tabName === 'history') {
+                loadHistory();
+            } else if (tabName === 'analytics') {
+                loadAnalytics();
+            }
+        }
+        
+        // Single URL Form Handler
+        document.getElementById('singleUrlForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const url = document.getElementById('singleUrl').value;
+            const aiProvider = document.getElementById('aiProvider').value;
+            const extractImages = document.getElementById('extractImages').value === 'true';
+            const customSelector = document.getElementById('customSelector').value;
+            
+            const submitBtn = document.getElementById('singleSubmitBtn');
+            const resultsDiv = document.getElementById('singleResults');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Scraping...';
+            resultsDiv.innerHTML = '<div class="loading">Scraping in progress...</div>';
+            
+            try {
+                const response = await fetch('/api/scrape', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        url: url,
+                        ai_provider: aiProvider,
+                        extract_images: extractImages,
+                        custom_selector: customSelector
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displaySingleResult(data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="alert alert-error">Network error: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '🚀 Start Scraping';
+            }
+        });
+        
+        // Multiple URLs Form Handler
+        document.getElementById('multipleUrlForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const urlsText = document.getElementById('multipleUrls').value;
+            const urls = urlsText.split('\n').filter(url => url.trim()).map(url => url.trim());
+            const aiProvider = document.getElementById('multiAiProvider').value;
+            const delay = parseFloat(document.getElementById('delay').value);
+            
+            if (urls.length === 0) {
+                alert('Please enter at least one URL');
+                return;
+            }
+            
+            const submitBtn = document.getElementById('multiSubmitBtn');
+            const progressDiv = document.getElementById('multipleProgress');
+            const resultsDiv = document.getElementById('multipleResults');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '⏳ Processing...';
+            progressDiv.style.display = 'block';
+            resultsDiv.innerHTML = '';
+            
+            try {
+                const response = await fetch('/api/scrape-multiple', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        urls: urls,
+                        ai_provider: aiProvider,
+                        delay: delay
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayMultipleResults(data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="alert alert-error">Network error: ${error.message}</div>`;
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '🚀 Start Batch Scraping';
+                progressDiv.style.display = 'none';
+            }
+        });
+        
+        function displaySingleResult(data) {
+            const resultsDiv = document.getElementById('singleResults');
+            
+            let html = `
+                <div class="result-card">
+                    <div class="result-header">
+                        <a href="${data.url}" target="_blank" class="result-url">${data.url}</a>
+                        <span class="result-status ${data.success ? 'status-success' : 'status-error'}">
+                            ${data.success ? 'Success' : 'Failed'}
+                        </span>
+                    </div>
+                    
+                    <div class="result-meta">
+                        <span>Status: ${data.status_code || 'N/A'}</span>
+                        <span>Title: ${data.title || 'N/A'}</span>
+                        <span>Content Length: ${data.content_length || 0} chars</span>
+                        <span>Links: ${data.links_count || 0}</span>
+                        <span>Images: ${data.images_count || 0}</span>
+                    </div>
+            `;
+            
+            if (data.content) {
+                html += `
+                    <div class="result-content">
+                        <h4>Content Preview</h4>
+                        <div class="content-preview">${data.content.substring(0, 500)}${data.content.length > 500 ? '...' : ''}</div>
+                    </div>
+                `;
+            }
+            
+            if (data.ai_analysis) {
+                html += `
+                    <div class="ai-analysis">
+                        <h5>🤖 AI Analysis</h5>
+                        <p><strong>Summary:</strong> ${data.ai_analysis.summary || 'N/A'}</p>
+                        <p><strong>Sentiment:</strong> ${data.ai_analysis.sentiment || 'N/A'}</p>
+                        <p><strong>Category:</strong> ${data.ai_analysis.category || 'N/A'}</p>
+                    </div>
+                `;
+            }
+            
+            html += '</div>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        function displayMultipleResults(data) {
+            const resultsDiv = document.getElementById('multipleResults');
+            
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${data.total}</div>
+                        <div class="stat-label">Total URLs</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.successful}</div>
+                        <div class="stat-label">Successful</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.failed}</div>
+                        <div class="stat-label">Failed</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${Math.round(data.successful / data.total * 100)}%</div>
+                        <div class="stat-label">Success Rate</div>
+                    </div>
+                </div>
+            `;
+            
+            data.results.forEach(result => {
+                html += `
+                    <div class="result-card">
+                        <div class="result-header">
+                            <a href="${result.url}" target="_blank" class="result-url">${result.url}</a>
+                            <span class="result-status ${result.success ? 'status-success' : 'status-error'}">
+                                ${result.success ? 'Success' : 'Failed'}
+                            </span>
+                        </div>
+                        
+                        <div class="result-meta">
+                            <span>Status: ${result.status_code || 'N/A'}</span>
+                            <span>Title: ${result.title || 'N/A'}</span>
+                            <span>Content: ${result.content_length || 0} chars</span>
+                            <span>Links: ${result.links_count || 0}</span>
+                        </div>
+                `;
+                
+                if (result.error) {
+                    html += `<p style="color: #dc3545; margin-top: 0.5rem;"><strong>Error:</strong> ${result.error}</p>`;
+                }
+                
+                if (result.ai_analysis) {
+                    html += `
+                        <div class="ai-analysis">
+                            <h5>🤖 AI Analysis</h5>
+                            <p><strong>Summary:</strong> ${result.ai_analysis.summary || 'N/A'}</p>
+                        </div>
+                    `;
+                }
+                
+                html += '</div>';
+            });
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        async function loadHistory() {
+            const resultsDiv = document.getElementById('historyResults');
+            resultsDiv.innerHTML = '<div class="loading">Loading history...</div>';
+            
+            try {
+                const response = await fetch('/api/history');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayHistory(data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error loading history: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="alert alert-error">Network error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayHistory(data) {
+            const resultsDiv = document.getElementById('historyResults');
+            
+            if (data.length === 0) {
+                resultsDiv.innerHTML = '<p>No scraping history found.</p>';
+                return;
+            }
+            
+            let html = `
+                <table class="history-table">
+                    <thead>
+                        <tr>
+                            <th>URL</th>
+                            <th>Status</th>
+                            <th>Title</th>
+                            <th>Scraped At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+            
+            data.forEach(item => {
+                html += `
+                    <tr>
+                        <td><a href="${item.url}" target="_blank">${item.url.length > 50 ? item.url.substring(0, 50) + '...' : item.url}</a></td>
+                        <td><span class="result-status ${item.success ? 'status-success' : 'status-error'}">${item.success ? 'Success' : 'Failed'}</span></td>
+                        <td>${item.title || 'N/A'}</td>
+                        <td>${new Date(item.scraped_at).toLocaleString()}</td>
+                        <td><button class="btn btn-secondary" onclick="viewDetails(${item.id})">View</button></td>
+                    </tr>
+                `;
+            });
+            
+            html += '</tbody></table>';
+            resultsDiv.innerHTML = html;
+        }
+        
+        async function loadAnalytics() {
+            const resultsDiv = document.getElementById('analyticsResults');
+            resultsDiv.innerHTML = '<div class="loading">Loading analytics...</div>';
+            
+            try {
+                const response = await fetch('/api/analytics');
+                const data = await response.json();
+                
+                if (response.ok) {
+                    displayAnalytics(data);
+                } else {
+                    resultsDiv.innerHTML = `<div class="alert alert-error">Error loading analytics: ${data.error}</div>`;
+                }
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="alert alert-error">Network error: ${error.message}</div>`;
+            }
+        }
+        
+        function displayAnalytics(data) {
+            const resultsDiv = document.getElementById('analyticsResults');
+            
+            let html = `
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${data.total_pages || 0}</div>
+                        <div class="stat-label">Total Pages Scraped</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.total_sessions || 0}</div>
+                        <div class="stat-label">Total Sessions</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.total_links || 0}</div>
+                        <div class="stat-label">Links Found</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${data.ai_analyzed || 0}</div>
+                        <div class="stat-label">AI Analyzed</div>
+                    </div>
+                </div>
+            `;
+            
+            if (data.popular_domains && data.popular_domains.length > 0) {
+                html += `
+                    <h3>Popular Domains</h3>
+                    <table class="history-table">
+                        <thead>
+                            <tr>
+                                <th>Domain</th>
+                                <th>Pages Scraped</th>
+                                <th>Success Rate</th>
+                                <th>Last Scraped</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                `;
+                
+                data.popular_domains.forEach(domain => {
+                    const successRate = Math.round(domain.successful_scrapes / domain.total_scrapes * 100);
+                    html += `
+                        <tr>
+                            <td>${domain.domain}</td>
+                            <td>${domain.total_scrapes}</td>
+                            <td>${successRate}%</td>
+                            <td>${new Date(domain.last_scraped).toLocaleString()}</td>
+                        </tr>
+                    `;
+                });
+                
+                html += '</tbody></table>';
+            }
+            
+            resultsDiv.innerHTML = html;
+        }
+        
+        async function clearHistory() {
+            if (!confirm('Are you sure you want to clear all scraping history?')) {
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/clear-history', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    loadHistory();
+                } else {
+                    alert('Failed to clear history');
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+        
+        async function viewDetails(pageId) {
+            try {
+                const response = await fetch(`/api/page/${pageId}`);
+                const data = await response.json();
+                
+                if (response.ok) {
+                    // Create a modal or new window to show details
+                    const detailWindow = window.open('', '_blank', 'width=800,height=600');
+                    detailWindow.document.write(`
+                        <html>
+                            <head><title>Page Details - ${data.title}</title></head>
+                            <body style="font-family: sans-serif; padding: 20px;">
+                                <h1>${data.title}</h1>
+                                <p><strong>URL:</strong> <a href="${data.url}" target="_blank">${data.url}</a></p>
+                                <p><strong>Status:</strong> ${data.status_code}</p>
+                                <p><strong>Scraped At:</strong> ${new Date(data.scraped_at).toLocaleString()}</p>
+                                <h2>Content</h2>
+                                <pre style="white-space: pre-wrap; background: #f5f5f5; padding: 15px;">${data.content}</pre>
+                            </body>
+                        </html>
+                    `);
+                } else {
+                    alert('Failed to load page details');
+                }
+            } catch (error) {
+                alert('Network error: ' + error.message);
+            }
+        }
+        
+        // Auto-load analytics on page load
+        window.addEventListener('load', function() {
+            // Pre-fill with example URL if empty
+            const singleUrlInput = document.getElementById('singleUrl');
+            if (!singleUrlInput.value) {
+                singleUrlInput.value = 'https://example.com';
+            }
+        });
+    </script>
+</body>
+</html>

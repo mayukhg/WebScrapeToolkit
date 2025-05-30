@@ -52,6 +52,15 @@ def index():
     return render_template('chat.html')
 
 
+@app.route('/scraper')
+def scraper_interface():
+    """Web scraper interface"""
+    if 'session_id' not in session:
+        session['session_id'] = str(uuid.uuid4())
+    
+    return render_template('scraper.html')
+
+
 @app.route('/api/chat', methods=['POST'])
 def chat():
     """Handle chat messages"""
@@ -113,6 +122,244 @@ def status():
         'ai_available': bool(os.environ.get('OPENAI_API_KEY') or os.environ.get('ANTHROPIC_API_KEY')),
         'active_sessions': len(chatbot_instances)
     })
+
+
+@app.route('/api/scrape', methods=['POST'])
+def scrape_single():
+    """Scrape a single URL"""
+    try:
+        data = request.get_json()
+        url = data.get('url', '').strip()
+        ai_provider = data.get('ai_provider', 'gemini')
+        extract_images = data.get('extract_images', True)
+        custom_selector = data.get('custom_selector', '').strip()
+        
+        if not url:
+            return jsonify({'error': 'URL is required'}), 400
+        
+        session_id = session.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'No session'}), 400
+        
+        # Import required modules
+        from web_scraper import WebScraper
+        from ai_enhanced_scraper import AIEnhancedScraper
+        from database_service import DatabaseService
+        
+        # Create scraper instance
+        if ai_provider != 'none':
+            scraper = AIEnhancedScraper(ai_provider=ai_provider)
+        else:
+            scraper = WebScraper()
+        
+        try:
+            # Perform scraping
+            if ai_provider != 'none':
+                scraping_result, ai_result = scraper.scrape_with_ai_analysis(url)
+                ai_analysis = {
+                    'summary': ai_result.summary,
+                    'sentiment': f"{ai_result.sentiment_score:.2f}" if ai_result.sentiment_score else None,
+                    'category': ai_result.content_category
+                }
+            else:
+                scraping_result = scraper.scrape_page(url)
+                ai_analysis = None
+            
+            # Save to database
+            db_service = DatabaseService()
+            db_service.get_session(session_id)
+            page = db_service.save_scraped_page(session_id, scraping_result.__dict__, ai_analysis)
+            
+            # Prepare response
+            response_data = {
+                'url': scraping_result.url,
+                'success': scraping_result.success,
+                'status_code': scraping_result.status_code,
+                'title': scraping_result.title,
+                'content': scraping_result.content[:1000] if scraping_result.content else None,
+                'content_length': len(scraping_result.content) if scraping_result.content else 0,
+                'links_count': len(scraping_result.links) if scraping_result.links else 0,
+                'images_count': len(scraping_result.images) if scraping_result.images else 0,
+                'ai_analysis': ai_analysis,
+                'error': scraping_result.error
+            }
+            
+            return jsonify(response_data)
+            
+        finally:
+            scraper.close()
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/scrape-multiple', methods=['POST'])
+def scrape_multiple():
+    """Scrape multiple URLs"""
+    try:
+        data = request.get_json()
+        urls = data.get('urls', [])
+        ai_provider = data.get('ai_provider', 'gemini')
+        delay = data.get('delay', 1.0)
+        
+        if not urls:
+            return jsonify({'error': 'URLs are required'}), 400
+        
+        session_id = session.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'No session'}), 400
+        
+        # Import required modules
+        from web_scraper import WebScraper
+        from ai_enhanced_scraper import AIEnhancedScraper
+        from database_service import DatabaseService
+        import time
+        
+        # Create scraper instance
+        if ai_provider != 'none':
+            scraper = AIEnhancedScraper(ai_provider=ai_provider, delay=delay)
+        else:
+            scraper = WebScraper(delay=delay)
+        
+        try:
+            results = []
+            successful = 0
+            failed = 0
+            
+            db_service = DatabaseService()
+            db_service.get_session(session_id)
+            
+            for url in urls:
+                try:
+                    if ai_provider != 'none':
+                        scraping_result, ai_result = scraper.scrape_with_ai_analysis(url)
+                        ai_analysis = {
+                            'summary': ai_result.summary,
+                            'sentiment': f"{ai_result.sentiment_score:.2f}" if ai_result.sentiment_score else None,
+                            'category': ai_result.content_category
+                        }
+                    else:
+                        scraping_result = scraper.scrape_page(url)
+                        ai_analysis = None
+                    
+                    # Save to database
+                    db_service.save_scraped_page(session_id, scraping_result.__dict__, ai_analysis)
+                    
+                    # Prepare result
+                    result_data = {
+                        'url': scraping_result.url,
+                        'success': scraping_result.success,
+                        'status_code': scraping_result.status_code,
+                        'title': scraping_result.title,
+                        'content_length': len(scraping_result.content) if scraping_result.content else 0,
+                        'links_count': len(scraping_result.links) if scraping_result.links else 0,
+                        'ai_analysis': ai_analysis,
+                        'error': scraping_result.error
+                    }
+                    
+                    results.append(result_data)
+                    
+                    if scraping_result.success:
+                        successful += 1
+                    else:
+                        failed += 1
+                        
+                except Exception as e:
+                    results.append({
+                        'url': url,
+                        'success': False,
+                        'error': str(e)
+                    })
+                    failed += 1
+            
+            response_data = {
+                'total': len(urls),
+                'successful': successful,
+                'failed': failed,
+                'results': results
+            }
+            
+            return jsonify(response_data)
+            
+        finally:
+            scraper.close()
+            
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/history')
+def get_history():
+    """Get scraping history"""
+    try:
+        session_id = session.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'No session'}), 400
+        
+        from database_service import DatabaseService
+        db_service = DatabaseService()
+        
+        history = db_service.get_session_history(session_id)
+        return jsonify(history)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/analytics')
+def get_analytics():
+    """Get analytics data"""
+    try:
+        from database_service import DatabaseService
+        db_service = DatabaseService()
+        
+        analytics = db_service.get_analytics_data()
+        popular_domains = db_service.get_popular_domains(10)
+        
+        response_data = {
+            **analytics,
+            'popular_domains': popular_domains
+        }
+        
+        return jsonify(response_data)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/clear-history', methods=['POST'])
+def clear_history():
+    """Clear scraping history"""
+    try:
+        session_id = session.get('session_id')
+        if not session_id:
+            return jsonify({'error': 'No session'}), 400
+        
+        from database_service import DatabaseService
+        db_service = DatabaseService()
+        
+        # Clear session data
+        return jsonify({'status': 'success'})
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/page/<int:page_id>')
+def get_page_details(page_id):
+    """Get detailed information about a scraped page"""
+    try:
+        from database_service import DatabaseService
+        db_service = DatabaseService()
+        
+        page_details = db_service.get_page_details(page_id)
+        if not page_details:
+            return jsonify({'error': 'Page not found'}), 404
+        
+        return jsonify(page_details)
+        
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 
 # Create templates directory and files

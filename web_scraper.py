@@ -14,6 +14,7 @@ from typing import Dict, List, Optional, Union, Any
 import logging
 from dataclasses import dataclass
 from urllib.robotparser import RobotFileParser
+from utils import normalize_url
 
 
 @dataclass
@@ -148,6 +149,9 @@ class WebScraper:
             requests.Response: The response object if successful, None otherwise
         """
         try:
+            # Normalize URL to ensure it has proper protocol
+            url = normalize_url(url)
+            
             # Check robots.txt compliance
             if not self._check_robots_txt(url):
                 self.logger.error(f"Robots.txt disallows scraping {url}")

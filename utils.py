@@ -48,6 +48,30 @@ def clean_text(text: str) -> str:
     return text
 
 
+def normalize_url(url: str) -> str:
+    """
+    Normalize URL by adding appropriate protocol if missing
+    
+    Args:
+        url (str): URL that may be missing protocol
+        
+    Returns:
+        str: URL with proper protocol
+    """
+    if not url:
+        return url
+    
+    # If URL already has protocol, return as is
+    if url.startswith(('http://', 'https://')):
+        return url
+    
+    # Remove any leading slashes
+    url = url.lstrip('/')
+    
+    # Try HTTPS first for most domains
+    return 'https://' + url
+
+
 def extract_domain(url: str) -> str:
     """
     Extract domain from URL
@@ -59,6 +83,9 @@ def extract_domain(url: str) -> str:
         str: Domain name
     """
     try:
+        # Normalize URL first
+        if not url.startswith(('http://', 'https://')):
+            url = normalize_url(url)
         parsed = urllib.parse.urlparse(url)
         return parsed.netloc
     except Exception:
@@ -76,9 +103,9 @@ def is_valid_url(url: str) -> bool:
         bool: True if valid, False otherwise
     """
     try:
-        # Add https:// if no scheme is provided
+        # Add protocol if no scheme is provided
         if not url.startswith(('http://', 'https://')):
-            url = 'https://' + url
+            url = normalize_url(url)
         
         result = urllib.parse.urlparse(url)
         return all([result.scheme, result.netloc]) and result.scheme in ['http', 'https']
@@ -226,30 +253,7 @@ def create_random_delay(min_delay: float, max_delay: float) -> float:
     return random.uniform(min_delay, max_delay)
 
 
-def normalize_url(url: str) -> str:
-    """
-    Normalize URL by removing fragments and unnecessary parameters
-    
-    Args:
-        url (str): URL to normalize
-        
-    Returns:
-        str: Normalized URL
-    """
-    try:
-        parsed = urllib.parse.urlparse(url)
-        # Remove fragment (everything after #)
-        normalized = urllib.parse.urlunparse((
-            parsed.scheme,
-            parsed.netloc,
-            parsed.path,
-            parsed.params,
-            parsed.query,
-            ''  # Remove fragment
-        ))
-        return normalized
-    except Exception:
-        return url
+
 
 
 def get_file_extension_from_url(url: str) -> str:

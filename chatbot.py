@@ -13,7 +13,7 @@ import time
 from typing import Dict, List, Optional, Any
 from web_scraper import WebScraper, ScrapingResult
 from ai_integration_guide import SimpleAIEnhancedScraper
-from utils import is_valid_url, extract_domain, clean_text
+from utils import is_valid_url, extract_domain, clean_text, normalize_url
 from database_service import DatabaseService
 
 

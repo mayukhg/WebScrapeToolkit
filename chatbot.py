@@ -475,7 +475,7 @@ If they ask about something you can't do, suggest related features you can help 
         message_lower = message.lower()
         
         if any(word in message_lower for word in ['hello', 'hi', 'hey']):
-            return "Hello! I'm your web scraping assistant. Give me a URL to scrape or ask for help to see what I can do."
+            return "Hello! I'm your web scraping assistant. Give me a website to scrape (like 'amazon.in') or ask for help to see what I can do."
         
         elif any(word in message_lower for word in ['thank', 'thanks']):
             return "You're welcome! Is there anything else you'd like me to scrape or analyze?"
@@ -484,7 +484,7 @@ If they ask about something you can't do, suggest related features you can help 
             return "I can scrape websites, extract content, analyze text, find links, and provide insights. Try 'help' for detailed commands!"
         
         else:
-            return "I'm not sure about that, but I can help you scrape websites and analyze content. Try commands like 'scrape [URL]' or 'help' for more options."
+            return "I'd be happy to scrape a website for you! Please provide a URL. For example: 'Scrape example.com' or 'Scrape https://example.com'"
     
     def _show_session_summary(self):
         """Show summary at end of session"""

@@ -1,0 +1,67 @@
+[
+  {
+    "url": "https://httpbin.org/",
+    "status_code": 200,
+    "title": "httpbin.org",
+    "text_content": "httpbin.org httpbin.org 0.9.2 [ Base URL: httpbin.org/ ] A simple HTTP Request & Response Service. Run locally: $ docker run -p 80:80 kennethreitz/httpbin the developer - Website Send email to the developer [Powered by Flasgger] Other Utilities HTML form that posts to /post /forms/post",
+    "links": [
+      {
+        "url": "https://github.com/requests/httpbin",
+        "text": "",
+        "title": "",
+        "target": ""
+      },
+      {
+        "url": "https://kennethreitz.org",
+        "text": "the developer - Website",
+        "title": "",
+        "target": "_blank"
+      },
+      {
+        "url": "mailto:me@kennethreitz.org",
+        "text": "Send email to the developer",
+        "title": "",
+        "target": ""
+      },
+      {
+        "url": "https://github.com/rochacbruno/flasgger",
+        "text": "Flasgger",
+        "title": "",
+        "target": "_blank"
+      },
+      {
+        "url": "https://httpbin.org/forms/post",
+        "text": "HTML form",
+        "title": "",
+        "target": ""
+      }
+    ],
+    "images": null,
+    "metadata": {
+      "title": "httpbin.org"
+    },
+    "error": null
+  },
+  {
+    "url": "https://httpbin.org/json",
+    "status_code": 200,
+    "title": null,
+    "text_content": "{ \"slideshow\": { \"author\": \"Yours Truly\", \"date\": \"date of publication\", \"slides\": [ { \"title\": \"Wake up to WonderWidgets!\", \"type\": \"all\" }, { \"items\": [ \"Why WonderWidgets are great\", \"Who buys WonderWidgets\" ], \"title\": \"Overview\", \"type\": \"all\" } ], \"title\": \"Sample Slide Show\" } }",
+    "links": [],
+    "images": null,
+    "metadata": {},
+    "error": null
+  },
+  {
+    "url": "https://httpbin.org/xml",
+    "status_code": 200,
+    "title": "Wake up to WonderWidgets!",
+    "text_content": "Wake up to WonderWidgets! Overview Why WonderWidgets are great Who buys WonderWidgets",
+    "links": [],
+    "images": null,
+    "metadata": {
+      "title": "Wake up to WonderWidgets!"
+    },
+    "error": null
+  }
+]

@@ -9,14 +9,31 @@ from flask import Flask, render_template, request, jsonify, session
 import json
 import os
 from chatbot import WebScrapingChatbot
+from models import db
+from database_service import DatabaseService
 import uuid
 
 
 app = Flask(__name__)
 app.secret_key = os.environ.get('SECRET_KEY', str(uuid.uuid4()))
 
+# Configure database
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Initialize database
+db.init_app(app)
+
 # Store chatbot instances per session
 chatbot_instances = {}
+
+# Create database tables
+with app.app_context():
+    db.create_all()
 
 
 def get_chatbot(session_id):

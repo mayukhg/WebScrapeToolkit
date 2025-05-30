@@ -12,6 +12,7 @@ from typing import Dict, List, Optional, Any
 from web_scraper import WebScraper, ScrapingResult
 from ai_integration_guide import SimpleAIEnhancedScraper
 from utils import is_valid_url, extract_domain, clean_text
+from database_service import DatabaseService
 import time
 
 
@@ -207,6 +208,18 @@ class WebScrapingChatbot:
                 # Store result for later reference
                 domain = extract_domain(url)
                 self.scraped_data[domain] = result
+                
+                # Save to database if result exists
+                if result:
+                    try:
+                        ai_result = result.get('ai_analysis', {})
+                        DatabaseService.save_scraped_page(
+                            session_id=self.session_id,
+                            scraping_result=result,
+                            ai_result=ai_result if ai_result else None
+                        )
+                    except Exception as e:
+                        print(f"Warning: Could not save to database: {e}")
                 
                 # Update session statistics
                 self.session_stats['pages_scraped'] += 1

@@ -149,26 +149,35 @@ class WebScrapingChatbot:
     def _analyze_intent(self, message: str) -> Dict[str, Any]:
         """
         Analyze user message to determine intent and extract parameters
-        
+
         Args:
             message (str): User's message
-            
+
         Returns:
             Dict containing intent analysis
         """
         message_lower = message.lower()
-        
-        # Extract URLs from message
-        url_pattern = r'https?://[^\s]+'
-        urls = re.findall(url_pattern, message)
-        
+
+        # --- MODIFIED PART ---
+        # Updated regex to find URLs that might not have a scheme (http/https)
+        # This pattern matches:
+        # - http://example.com/path
+        # - https://example.com/path
+        # - www.example.com/path
+        # - example.com/path
+        # - subdomain.example.com/path
+        # The normalize_url function in utils.py will handle adding the scheme later.
+        url_pattern = r'(?:https?://)?(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:/[^\s]*)?'
+        extracted_urls = re.findall(url_pattern, message)
+        # --- END OF MODIFIED PART ---
+
         intent = {
             "action": "unknown",
-            "urls": urls,
+            "urls": extracted_urls, # Use the new list of extracted URLs
             "parameters": {}
         }
-        
-        # Determine action based on keywords
+
+        # Determine action based on keywords (rest of the method remains the same)
         if any(word in message_lower for word in ['scrape', 'fetch', 'get', 'extract from']):
             intent["action"] = "scrape"
         elif any(word in message_lower for word in ['analyze', 'analysis', 'sentiment', 'summary', 'summarize']):
@@ -179,7 +188,7 @@ class WebScrapingChatbot:
             intent["action"] = "help"
         elif any(word in message_lower for word in ['stats', 'statistics', 'session', 'summary']):
             intent["action"] = "stats"
-        
+
         # Extract specific data types requested
         if 'links' in message_lower:
             intent["parameters"]["show_links"] = True
@@ -189,7 +198,7 @@ class WebScrapingChatbot:
             intent["parameters"]["analyze_sentiment"] = True
         if any(word in message_lower for word in ['summary', 'summarize', 'main points']):
             intent["parameters"]["generate_summary"] = True
-        
+
         return intent
     
     def _handle_scrape_request(self, intent: Dict[str, Any]) -> str:
